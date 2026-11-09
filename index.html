@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Biblioteca Municipal — Sistema Interno</title>
+<style>
+:root{--bg:#f6f7f9;--surface:#fff;--text:#1f2933;--muted:#6b7785;--line:#e3e7ec;--accent:#2f5d8a;--accent-soft:#eaf1f8;--ok:#2e7d4f;--ok-bg:#e8f4ec;--warn:#b26a00;--warn-bg:#fdf1de;--bad:#b3362d;--bad-bg:#fbe9e7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181c;--surface:#1d2127;--text:#e6e9ed;--muted:#97a1ad;--line:#2e343c;--accent:#7fb0e0;--accent-soft:#222c37;--ok:#6cc08b;--ok-bg:#1f2e25;--warn:#e0a850;--warn-bg:#33291a;--bad:#ee8a82;--bad-bg:#35201e}}
+:root[data-theme="dark"]{--bg:#15181c;--surface:#1d2127;--text:#e6e9ed;--muted:#97a1ad;--line:#2e343c;--accent:#7fb0e0;--accent-soft:#222c37;--ok:#6cc08b;--ok-bg:#1f2e25;--warn:#e0a850;--warn-bg:#33291a;--bad:#ee8a82;--bad-bg:#35201e}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--surface);border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+header h1{font-size:17px;margin:0;font-weight:650}
+header small{color:var(--muted);display:block;font-weight:400;font-size:12.5px}
+nav{display:flex;gap:4px;background:var(--surface);border-bottom:1px solid var(--line);padding:0 16px;overflow-x:auto}
+nav button{border:0;background:none;color:var(--muted);padding:12px 14px;font:inherit;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav button.on{color:var(--accent);border-color:var(--accent);font-weight:600}
+main{max-width:1100px;margin:0 auto;padding:22px 20px 60px}
+section{display:none}section.on{display:block}
+.grid{display:grid;gap:14px}
+.stats{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 18px}
+.stat b{display:block;font-size:26px;font-weight:650}.stat span{color:var(--muted);font-size:13px}
+h2{font-size:15px;margin:0 0 12px;font-weight:650}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end}
+label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
+input,select{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-width:0}
+input:focus,select:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+.btn{font:inherit;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:6px;padding:8px 14px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.sm{padding:4px 9px;font-size:13px}
+.btn.danger{color:var(--bad);border-color:var(--line);background:transparent}
+.bar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:18px 0 10px}
+.bar input{width:min(320px,100%)}
+.tw{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-weight:600;background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td small{color:var(--muted);display:block}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600}
+.t-ok{background:var(--ok-bg);color:var(--ok)}.t-warn{background:var(--warn-bg);color:var(--warn)}.t-bad{background:var(--bad-bg);color:var(--bad)}.t-n{background:var(--accent-soft);color:var(--accent)}
+.empty{padding:26px;text-align:center;color:var(--muted)}
+.act{display:flex;gap:6px;flex-wrap:wrap}
+.two{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.hint{font-size:12.5px;color:var(--muted)}
+label.chk{flex-direction:row;align-items:center;gap:6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Biblioteca Municipal<small>Sistema interno de gestão do acervo e empréstimos</small></h1>
+  <span class="hint" id="hoje"></span>
+</header>
+<nav id="tabs">
+  <button data-t="painel" class="on">Painel</button>
+  <button data-t="emprestimos">Empréstimos</button>
+  <button data-t="leitores">Leitores</button>
+  <button data-t="acervo">Acervo</button>
+</nav>
+<main>
+
+<section id="painel" class="on">
+  <div class="grid stats" id="stats"></div>
+  <div class="grid two">
+    <div class="card"><h2>Devoluções em atraso</h2><div id="atrasos"></div></div>
+    <div class="card"><h2>Vencem nos próximos 3 dias</h2><div id="proximos"></div></div>
+  </div>
+</section>
+
+<section id="emprestimos">
+  <div class="card">
+    <h2>Novo empréstimo</h2>
+    <form id="fEmp">
+      <label>Leitor<select id="eLeitor" required></select></label>
+      <label>Livro disponível<select id="eLivro" required></select></label>
+      <label>Prazo (dias)<input id="ePrazo" type="number" min="1" max="60" value="14" required></label>
+      <label>Devolução prevista<input id="eData" type="date" required></label>
+      <button class="btn" type="submit">Registrar empréstimo</button>
+    </form>
+    <p class="hint" id="eAviso" style="margin:10px 0 0"></p>
+  </div>
+  <div class="bar">
+    <input id="qEmp" type="search" placeholder="Buscar por livro, leitor ou telefone">
+    <label class="chk"><input type="checkbox" id="hist"> Mostrar devolvidos</label>
+  </div>
+  <div class="tw"><table><thead><tr><th>Livro</th><th>Leitor</th><th>Contato</th><th>Retirada</th><th>Devolução</th><th>Situação</th><th></th></tr></thead><tbody id="tEmp"></tbody></table></div>
+</section>
+
+<section id="leitores">
+  <div class="card">
+    <h2>Cadastrar leitor</h2>
+    <form id="fLei">
+      <label>Nome completo<input id="lNome" required></label>
+      <label>CPF<input id="lCpf" placeholder="000.000.000-00" required></label>
+      <label>Telefone<input id="lTel" placeholder="(00) 00000-0000" required></label>
+      <label>E-mail<input id="lMail" type="email"></label>
+      <label>Endereço<input id="lEnd"></label>
+      <label>Data de nascimento<input id="lNasc" type="date"></label>
+      <button class="btn" type="submit">Salvar leitor</button>
+    </form>
+  </div>
+  <div class="bar"><input id="qLei" type="search" placeholder="Buscar por nome, CPF ou telefone"></div>
+  <div class="tw"><table><thead><tr><th>Nº</th><th>Nome</th><th>CPF</th><th>Contato</th><th>Empréstimos ativos</th><th></th></tr></thead><tbody id="tLei"></tbody></table></div>
+</section>
+
+<section id="acervo">
+  <div class="card">
+    <h2>Cadastrar livro</h2>
+    <form id="fLiv">
+      <label>Título<input id="bTit" required></label>
+      <label>Autor<input id="bAut" required></label>
+      <label>Editora<input id="bEdi" required></label>
+      <label>Ano<input id="bAno" type="number" min="1000" max="2100" required></label>
+      <label>ISBN<input id="bIsbn"></label>
+      <label>Categoria<input id="bCat" placeholder="Ex.: Romance, Infantil"></label>
+      <label>Exemplares<input id="bQtd" type="number" min="1" value="1" required></label>
+      <label>Localização<input id="bLoc" placeholder="Ex.: Estante B-3"></label>
+      <button class="btn" type="submit">Salvar livro</button>
+    </form>
+  </div>
+  <div class="bar"><input id="qLiv" type="search" placeholder="Buscar por título, autor, editora ou ISBN"></div>
+  <div class="tw"><table><thead><tr><th>Título</th><th>Autor</th><th>Editora</th><th>Ano</th><th>Categoria / Local</th><th>Disponíveis</th><th></th></tr></thead><tbody id="tLiv"></tbody></table></div>
+</section>
+
+</main>
+<script>
+(function(){
+var KEY="biblioteca-v1",DAY=86400000;
+function iso(d){return new Date(d).toISOString().slice(0,10)}
+function add(s,n){var d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return iso(d)}
+var hoje=iso(new Date(Date.now()-new Date().getTimezoneOffset()*60000));
+function br(s){var p=s.split("-");return p[2]+"/"+p[1]+"/"+p[0]}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function seed(){return{n:{l:5,b:6,e:4},
+ leitores:[
+  {id:1,nome:"Maria Aparecida Souza",cpf:"123.456.789-00",tel:"(47) 99811-2233",mail:"maria.souza@email.com",end:"Rua das Flores, 120"},
+  {id:2,nome:"João Carlos Pereira",cpf:"987.654.321-00",tel:"(47) 99654-8710",mail:"",end:"Av. Central, 45"},
+  {id:3,nome:"Ana Beatriz Lima",cpf:"456.123.789-10",tel:"(47) 98877-4501",mail:"ana.lima@email.com",end:"Rua do Porto, 8"},
+  {id:4,nome:"Pedro Henrique Alves",cpf:"321.654.987-22",tel:"(47) 99120-3344",mail:"",end:"Rua Nova, 300"}],
+ livros:[
+  {id:1,tit:"Dom Casmurro",aut:"Machado de Assis",edi:"Principis",ano:2019,isbn:"978-85-8070-000-1",cat:"Romance",loc:"Estante A-1",qtd:3},
+  {id:2,tit:"Grande Sertão: Veredas",aut:"João Guimarães Rosa",edi:"Nova Fronteira",ano:2015,isbn:"",cat:"Romance",loc:"Estante A-2",qtd:1},
+  {id:3,tit:"Memórias Póstumas de Brás Cubas",aut:"Machado de Assis",edi:"Penguin-Companhia",ano:2014,isbn:"",cat:"Romance",loc:"Estante A-1",qtd:2},
+  {id:4,tit:"O Pequeno Príncipe",aut:"Antoine de Saint-Exupéry",edi:"Agir",ano:2009,isbn:"",cat:"Infantil",loc:"Estante C-4",qtd:2},
+  {id:5,tit:"Capitães da Areia",aut:"Jorge Amado",edi:"Companhia das Letras",ano:2008,isbn:"",cat:"Romance",loc:"Estante A-3",qtd:1}],
+ emp:[
+  {id:1,leitor:1,livro:2,ini:add(hoje,-20),fim:add(hoje,-6),dev:null},
+  {id:2,leitor:2,livro:1,ini:add(hoje,-12),fim:add(hoje,2),dev:null},
+  {id:3,leitor:3,livro:4,ini:add(hoje,-3),fim:add(hoje,11),dev:null},
+  {id:4,leitor:4,livro:5,ini:add(hoje,-30),fim:add(hoje,-16),dev:add(hoje,-15)}]}}
+var S;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
+if(!S||!S.leitores)S=seed();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function $(i){return document.getElementById(i)}
+function livro(id){return S.livros.filter(function(b){return b.id==id})[0]}
+function leitor(id){return S.leitores.filter(function(r){return r.id==id})[0]}
+function ativos(){return S.emp.filter(function(e){return!e.dev})}
+function emUso(id){return ativos().filter(function(e){return e.livro==id}).length}
+function disp(b){return b.qtd-emUso(b.id)}
+function dias(a,b){return Math.round((new Date(b+"T12:00:00")-new Date(a+"T12:00:00"))/DAY)}
+function status(e){if(e.dev)return'<span class="tag t-n">Devolvido '+br(e.dev)+'</span>';
+ var d=dias(hoje,e.fim);
+ if(d<0)return'<span class="tag t-bad">Atrasado '+(-d)+'d</span>';
+ if(d<=3)return'<span class="tag t-warn">'+(d==0?"Vence hoje":"Vence em "+d+"d")+'</span>';
+ return'<span class="tag t-ok">Em dia</span>'}
+function match(q,arr){q=q.toLowerCase().trim();return!q||arr.join(" ").toLowerCase().indexOf(q)>-1}
+function empty(n,t){return'<tr><td colspan="'+n+'" class="empty">'+t+'</td></tr>'}
+
+function rPainel(){
+ var a=ativos(),atr=a.filter(function(e){return dias(hoje,e.fim)<0}),prox=a.filter(function(e){var d=dias(hoje,e.fim);return d>=0&&d<=3});
+ var tot=S.livros.reduce(function(s,b){return s+b.qtd},0);
+ $("stats").innerHTML=[["Títulos no acervo",S.livros.length],["Exemplares",tot],["Leitores cadastrados",S.leitores.length],["Empréstimos ativos",a.length],["Em atraso",atr.length]].map(function(x){return'<div class="card stat"><b>'+x[1]+'</b><span>'+x[0]+'</span></div>'}).join("");
+ function li(arr){if(!arr.length)return'<div class="empty">Nenhum registro.</div>';
+  return arr.map(function(e){var l=leitor(e.leitor),b=livro(e.livro);return'<div style="padding:8px 0;border-bottom:1px solid var(--line)"><b>'+esc(b.tit)+'</b><small style="display:block;color:var(--muted)">'+esc(l.nome)+' · '+esc(l.tel)+' · prazo '+br(e.fim)+'</small></div>'}).join("")}
+ $("atrasos").innerHTML=li(atr);$("proximos").innerHTML=li(prox)}
+
+function rEmp(){
+ var q=$("qEmp").value,h=$("hist").checked;
+ var rows=S.emp.filter(function(e){if(!h&&e.dev)return false;var l=leitor(e.leitor),b=livro(e.livro);return match(q,[b.tit,l.nome,l.tel])})
+  .sort(function(a,b){return a.fim<b.fim?-1:1});
+ $("tEmp").innerHTML=rows.length?rows.map(function(e){var l=leitor(e.leitor),b=livro(e.livro);
+  return'<tr><td><b>'+esc(b.tit)+'</b><small>'+esc(b.aut)+'</small></td><td>'+esc(l.nome)+'</td><td>'+esc(l.tel)+(l.mail?'<small>'+esc(l.mail)+'</small>':'')+'</td><td>'+br(e.ini)+'</td><td>'+br(e.fim)+'</td><td>'+status(e)+'</td><td>'+(e.dev?'':'<div class="act"><button class="btn sm" data-dev="'+e.id+'">Devolver</button><button class="btn sm ghost" data-ren="'+e.id+'">Renovar +7d</button></div>')+'</td></tr>'}).join(""):empty(7,"Nenhum empréstimo encontrado.")}
+
+function rLei(){
+ var q=$("qLei").value;
+ var rows=S.leitores.filter(function(r){return match(q,[r.nome,r.cpf,r.tel])});
+ $("tLei").innerHTML=rows.length?rows.map(function(r){var n=ativos().filter(function(e){return e.leitor==r.id}).length;
+  return'<tr><td>'+String(r.id).padStart(4,"0")+'</td><td><b>'+esc(r.nome)+'</b>'+(r.end?'<small>'+esc(r.end)+'</small>':'')+'</td><td>'+esc(r.cpf)+'</td><td>'+esc(r.tel)+(r.mail?'<small>'+esc(r.mail)+'</small>':'')+'</td><td>'+n+'</td><td><button class="btn sm danger" data-dl="'+r.id+'">Excluir</button></td></tr>'}).join(""):empty(6,"Nenhum leitor encontrado.")}
+
+function rLiv(){
+ var q=$("qLiv").value;
+ var rows=S.livros.filter(function(b){return match(q,[b.tit,b.aut,b.edi,b.isbn,b.cat])});
+ $("tLiv").innerHTML=rows.length?rows.map(function(b){var d=disp(b);
+  return'<tr><td><b>'+esc(b.tit)+'</b>'+(b.isbn?'<small>ISBN '+esc(b.isbn)+'</small>':'')+'</td><td>'+esc(b.aut)+'</td><td>'+esc(b.edi)+'</td><td>'+b.ano+'</td><td>'+esc(b.cat||"—")+(b.loc?'<small>'+esc(b.loc)+'</small>':'')+'</td><td><span class="tag '+(d>0?"t-ok":"t-bad")+'">'+d+' de '+b.qtd+'</span></td><td><button class="btn sm danger" data-db="'+b.id+'">Excluir</button></td></tr>'}).join(""):empty(7,"Nenhum livro encontrado.")}
+
+function rSel(){
+ $("eLeitor").innerHTML='<option value="">Selecione…</option>'+S.leitores.map(function(r){return'<option value="'+r.id+'">'+esc(r.nome)+'</option>'}).join("");
+ $("eLivro").innerHTML='<option value="">Selecione…</option>'+S.livros.filter(function(b){return disp(b)>0}).map(function(b){return'<option value="'+b.id+'">'+esc(b.tit)+' — '+esc(b.aut)+'</option>'}).join("")}
+function all(){rPainel();rEmp();rLei();rLiv();rSel();save()}
+
+$("hoje").textContent=br(hoje);
+$("eData").value=add(hoje,14);
+$("ePrazo").oninput=function(){$("eData").value=add(hoje,+this.value||0)};
+$("eData").onchange=function(){var d=dias(hoje,this.value);if(d>0)$("ePrazo").value=d};
+$("tabs").onclick=function(ev){var t=ev.target.dataset.t;if(!t)return;
+ document.querySelectorAll("nav button,section").forEach(function(x){x.classList.remove("on")});
+ ev.target.classList.add("on");$(t).classList.add("on")};
+["qEmp","qLei","qLiv"].forEach(function(i){$(i).oninput=function(){rEmp();rLei();rLiv()}});
+$("hist").onchange=rEmp;
+
+$("fEmp").onsubmit=function(e){e.preventDefault();
+ var l=$("eLeitor").value,b=$("eLivro").value;if(!l||!b)return;
+ if(ativos().filter(function(x){return x.leitor==l}).length>=3){$("eAviso").textContent="Este leitor já possui 3 empréstimos ativos (limite).";return}
+ if(ativos().some(function(x){return x.leitor==l&&dias(hoje,x.fim)<0})){$("eAviso").textContent="Este leitor tem devolução em atraso. Regularize antes de novo empréstimo.";return}
+ $("eAviso").textContent="";
+ S.emp.push({id:S.n.e++,leitor:+l,livro:+b,ini:hoje,fim:$("eData").value,dev:null});
+ this.reset();$("ePrazo").value=14;$("eData").value=add(hoje,14);all()};
+$("fLei").onsubmit=function(e){e.preventDefault();
+ S.leitores.push({id:S.n.l++,nome:$("lNome").value.trim(),cpf:$("lCpf").value.trim(),tel:$("lTel").value.trim(),mail:$("lMail").value.trim(),end:$("lEnd").value.trim(),nasc:$("lNasc").value});
+ this.reset();all()};
+$("fLiv").onsubmit=function(e){e.preventDefault();
+ S.livros.push({id:S.n.b++,tit:$("bTit").value.trim(),aut:$("bAut").value.trim(),edi:$("bEdi").value.trim(),ano:+$("bAno").value,isbn:$("bIsbn").value.trim(),cat:$("bCat").value.trim(),loc:$("bLoc").value.trim(),qtd:+$("bQtd").value});
+ this.reset();$("bQtd").value=1;all()};
+
+document.body.onclick=function(ev){var d=ev.target.dataset;
+ if(d.dev){S.emp.forEach(function(x){if(x.id==d.dev)x.dev=hoje});all()}
+ if(d.ren){S.emp.forEach(function(x){if(x.id==d.ren)x.fim=add(x.fim,7)});all()}
+ if(d.dl){if(ativos().some(function(x){return x.leitor==d.dl})){alert("Leitor com empréstimo ativo não pode ser excluído.");return}
+  if(confirm("Excluir este leitor?")){S.leitores=S.leitores.filter(function(r){return r.id!=d.dl});all()}}
+ if(d.db){if(emUso(+d.db)){alert("Livro com exemplar emprestado não pode ser excluído.");return}
+  if(confirm("Excluir este livro do acervo?")){S.livros=S.livros.filter(function(b){return b.id!=d.db});all()}}};
+all();
+})();
+</script>
+</body>
+</html>
